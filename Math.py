@@ -2,7 +2,7 @@ import random
 number = random.randint(1, 100)
 counter=3
 while True:
-	code="Bannana"
+	code="Banana"
 	user = "Michael"
 	inup = input("Welcome To The Game Selector! Please Sign In or Sign Up!")
 	if inup == "Sign In" or inup == "Sign in" or inup == "sign in" or inup == "sign In":
@@ -39,6 +39,7 @@ while True:
 				print("Guess The Number Launching...")
 				guesses = 0
 				name = str(input("Enter Your Name Here: "))
+				number = random.randint(1, 100)
 				while True:
     					guess = int(input("Enter Your Guess: "))
     					if guess < 1:
