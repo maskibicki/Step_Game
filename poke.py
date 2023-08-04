@@ -1,6 +1,26 @@
 import json
 import random
 
+def save_game_state(filename, player_name, coins, stageprice, level, temp, wandermax):
+    data = {
+        "player_name": player_name,
+        "coins": coins,
+        "stageprice": stageprice,
+        "level": level,
+        "temp": temp,
+        "wandermax": wandermax
+    }
+    with open(filename, "w") as file:
+        json.dump(data, file)
+
+def load_game_state(filename):
+    try:
+        with open(filename, "r") as file:
+            data = json.load(file)
+            return data
+    except FileNotFoundError:
+        return None
+
 def extract_key_value(json_data, key):
     try:
         data = json.loads(json_data)
@@ -28,8 +48,18 @@ while True:
         print("For some people, Pokemon are pets, but for others, Pokemon are used to fight")
         break
     elif game in ["load saved game", "savegame", "save game", "loadsavedgame", "load save game", "loadsavegame"]:
-        print("No save game feature available. Try again later.")
-
+        save_file_name = f"{name.lower()}_save.json"
+        saved_data = load_game_state(save_file_name)
+        if saved_data:
+            coins = saved_data.get("coins", coins)
+            stageprice = saved_data.get("stageprice", stageprice)
+            level = saved_data.get("level", level)
+            temp = saved_data.get("temp", temp)
+            wandermax = saved_data.get("wandermax", wandermax)
+            print("Game loaded successfully!")
+        else:
+            print("No save game found. Starting a new game...")
+        break
     else:
         print("Invalid input. Please choose 'new game' or 'load saved game'.")
         continue
@@ -39,10 +69,10 @@ print("This is my grandson, he is your rival, his name is Jack")
 basepokechoice = ["pikachu", "charmander", "diglett", "ditto"]
 baseenergyamount = 5
 
-json_pikachu = '{"hp": 35, "maxhp": 274, "attack": 55, "maxattack": 229, "defence": 40, "maxdefence": 196, "special": "electroball", "level": 1, "health": 60, "stage": 0}'
-json_charmander = '{"hp": 39, "maxhp": 282, "attack": 52, "maxattack": 223, "defence": 43, "maxdefence": 203, "special": "ember", "level": 1, "health": 60, "stage": 0}'
-json_diglett = '{"hp": 10, "maxhp": 224, "attack": 55, "maxattack": 229, "defence": 25, "maxdefence": 163, "special": "mudslap", "level": 1, "health": 30, "stage": 0}'
-json_ditto = '{"hp": 48, "maxhp": 300, "attack": 48, "maxattack": 214, "defence": 48, "maxdefence": 214, "special": "transform", "level": 1, "health": 50, "stage": 0}'
+json_pikachu = '{"hp": 35, "maxhp": 274, "attack": 55, "maxattack": 229, "defence": 40, "maxdefence": 196, "special": "electroball", "level": 1, "health": 60, "stage": 0, "type": "electric"}'
+json_charmander = '{"hp": 39, "maxhp": 282, "attack": 52, "maxattack": 223, "defence": 43, "maxdefence": 203, "special": "ember", "level": 1, "health": 60, "stage": 0, "type": "fire"}'
+json_diglett = '{"hp": 10, "maxhp": 224, "attack": 55, "maxattack": 229, "defence": 25, "maxdefence": 163, "special": "mudslap", "level": 1, "health": 30, "stage": 0, "type": "rock"}'
+json_ditto = '{"hp": 48, "maxhp": 300, "attack": 48, "maxattack": 214, "defence": 48, "maxdefence": 214, "special": "transform", "level": 1, "health": 50, "stage": 0, "type": "mystic"}'
 
 while True:
     basepoke = input("Choose your first Pokemon (Charmander, Pikachu, Diglett, or Ditto): ").lower()
@@ -77,6 +107,7 @@ print("Max Defence:", pokemon_stats["maxdefence"])
 print("Special:", pokemon_stats["special"])
 print("Health:", pokemon_stats["health"])
 print("Stage:", pokemon_stats["stage"])
+print("Type:", pokemon_stats["type"])
 
 choices = ["attack", "defend", "heal", "run"]
 basicbulbasaurhealth = 60
@@ -98,7 +129,7 @@ while True:
             print("You defended yourself against Bulbasaur's attack that would have dealt 30 damage")
             print(f"You now have {pokemon_stats['health']} health")
         elif firstattack == "heal":
-            if playerenergy.split()[1] == "mystic":
+            if {pokemon_stats['type']} == "mystic":
                 pokemon_stats["health"] += 30
                 print("Pokemon healed 30")
             else:
@@ -207,7 +238,12 @@ while True:
                     print(f"You defended yourself against Mewtwo's attack that would have dealt {mewtwodamage} damage")
                     print(f"You now have {pokemon_stats['health']} health")
                 elif firstattack1 == "heal":
-                    print("You are already at max health")
+                    if {pokemon_stats['type']} == "mystic":
+                      pokemon_stats["health"] += 30
+                      print("Pokemon healed 30")
+                    else:
+                      print("Your pokemon doesn't have the ability to heal")
+                      
                 elif firstattack1 == "run":
                     print("You successfully ran away but you lost 5 coins")
                     coins-=5
@@ -260,7 +296,7 @@ while True:
             print("Then you decide to walk in and watch Cosmog fight the Mewtwo")
             print("You see that Mewtwo destroy the Cosmog")
 
-        upgrade2 = input(f"After you see the Mewtwo beat Cosmog you think of upgrading your {basepoke} for {stageprice} coins, you have {coins} coins (y/n): ").lower()
+        upgrade2 = input(f"After you see the Mewtwo beat another Cosmog you think of upgrading your {basepoke} for {stageprice} coins, you have {coins} coins (y/n): ").lower()
         if upgrade2 == "y":
             coins=coins-stageprice
             stageprice += 5
@@ -319,7 +355,7 @@ while True:
   
           if freechoice == "1":
               choice3 = input(f"To upgrade to stage {pokemon_stats['stage'] + 1}, you need to have {stageprice} coins, you have {coins} coins (y/n): ").lower()
-              if choice3 == "y" and coins >= stageprice and pokemon_stats['stage'] < 6:
+              if choice3 == "y" and coins >= stageprice and pokemon_stats['stage'] < 8:
                   coins -= stageprice
                   stageprice += 5
                   pokemon_stats['hp'] += 10
@@ -354,7 +390,7 @@ while True:
               choice5 = input(f"You have {playerenergy} energy, do you want to buy 5 more for 5 coins (y/n): ").lower()
               if choice5 == "y":
                 baseenergyamount += 5
-                playerenergy = playerenergy + baseenergyamount
+                playerenergy = int(playerenergy) + baseenergyamount
                 print(playerenergy)
                 continue
               elif choice5 == "n":
@@ -364,30 +400,36 @@ while True:
                 print("Not an option")
                 continue
             elif choice4 == "attackshop" or choice4 == "attack shop":
-                choice6 = input("Do you want to buy 10 attack for 5 coins (y/n)").lower()
-                if choice6 == "y":
-                      pokemon_stats["attack"] += 10
-                      coins -= 5
-                      print(f"You have {pokemon_stats['attack']} attack")
-                elif choice6 == "n":
-                    print("Okay")
-                    continue
-                elif choice4 == "pokemonshop" or choice4 == "pokemon shop":
-                  print("Sorry Pokemon shop is closed come back later")
-                elif choice4 == "wandershop" or choice4 == "wander shop":
-                  choice7=input("Do you want to spend 20 coins to reset your wander count (y/n)")
-                if choice7=="y":
-                  print(f"Okay, you now have {wandermax} Wandering attempts left")
-                  continue
-                elif choice7=="n":
-                  print("Okay")
-                  continue
-                else:
-                  print("Not an option")
-                  continue
+              choice6 = input("Do you want to buy 10 attack for 5 coins (y/n)").lower()
+              if choice6 == "y":
+                pokemon_stats["attack"] += 10
+                coins -= 5
+                print(f"You have {pokemon_stats['attack']} attack")
+              elif choice6 == "n":
+                print("Okay")
+                continue
+              else:
+                print("Not an option")
+                continue
+            elif choice4 == "pokemonshop" or choice4 == "pokemon shop":
+              print("Sorry Pokemon shop is closed come back later")
+            elif choice4 == "wandershop" or choice4 == "wander shop":
+              choice7 = input(f"Do you want to spend 20 coins to reset your wander count you have {coins} (y/n)").lower()
+              if choice7 == "y":
+                print("Okay, you now Can Wander Again")
+                coins -= 20
+                wandermax = 0
+                continue
+              elif choice7 == "n":
+                print("Okay")
+                continue
+              else:
+                print("Not an option")
+                continue
             else:
               print("Not an option")
               continue
+
               
   
           elif freechoice == "3":
@@ -662,11 +704,11 @@ while True:
   
           elif freechoice == "4":
             if wandermax < 10:
-              wanderingoptions = ["you found 30 coins on the ground", "you found a card for 7 energy", "you found a boost for 3 attack"]
+              wanderingoptions = ["you found 5 coins on the ground", "you found a card for 7 energy", "you found a boost for 1 attack"]
               wanderoptions = random.choice(wanderingoptions)
               print(f"While wandering around {wanderoptions}")
-              if wanderoptions == "you found 30 coins on the ground":
-                coins += 30
+              if wanderoptions == "you found 5 coins on the ground":
+                coins += 5
                 print(f"You have {coins} coins")
                 wandermax += 1
               elif wanderoptions == "you found a card for 7 energy":
@@ -675,7 +717,7 @@ while True:
                 wandermax += 1
               else:
                 print(f"You have {pokemon_stats['attack']} attack")
-                pokemon_stats['attack'] += 3
+                pokemon_stats['attack'] += 1
                 wandermax += 1
             else:
               print("You Feel Tired And You Cant Wander Anymore")
